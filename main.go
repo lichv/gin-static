@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"github.com/gin-contrib/multitemplate"
 	"github.com/gin-gonic/gin"
+	"github.com/thinkerou/favicon"
 	"io/fs"
 	"net/http"
+	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -36,8 +38,8 @@ func main() {
 	var staticPath string
 	var outport int
 
-	flag.StringVar(&websitePath,"w","./website","静态文件地址")
-	flag.StringVar(&staticPath,"s","./public","静态资源地址")
+	flag.StringVar(&websitePath,"w","./public","静态文件地址")
+	flag.StringVar(&staticPath,"s","./public/static","静态资源地址")
 	flag.IntVar(&outport,"o",8044,"输出端口")
 	if !flag.Parsed(){
 		flag.Parse()
@@ -46,6 +48,7 @@ func main() {
 	fmt.Println("ok" )
 	engine := gin.Default()
 	engine.Static("/static", staticPath)
+	engine.Use(favicon.New(path.Join(websitePath,"favicon.ico")))
 	fmt.Println(engine)
 	engine.HTMLRender = createMyRender(websitePath)
 	engine.GET("/", func(c *gin.Context) {
