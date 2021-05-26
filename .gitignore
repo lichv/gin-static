@@ -15,3 +15,5 @@ yarn-error.log*
 *.pyc
 *_initial.py
 db.sqlite3
+main
+main.exe
