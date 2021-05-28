@@ -8,6 +8,7 @@ import (
 	"github.com/thinkerou/favicon"
 	"io/fs"
 	"net/http"
+	"os"
 	"path"
 	"path/filepath"
 	"strconv"
@@ -19,6 +20,10 @@ func toLinux(basePath string) string {
 	return strings.ReplaceAll(basePath, "\\", "/")
 }
 
+func IsExist(f string) bool {
+	_, err := os.Stat(f)
+	return err == nil || os.IsExist(err)
+}
 func createMyRender(dirname string) multitemplate.Renderer {
 	r := multitemplate.NewRenderer()
 	filepath.Walk(dirname, func(path string, info fs.FileInfo, err error) error {
@@ -45,11 +50,13 @@ func main() {
 		flag.Parse()
 	}
 
-	fmt.Println("ok" )
 	engine := gin.Default()
 	engine.Static("/static", staticPath)
-	engine.Use(favicon.New(path.Join(websitePath,"favicon.ico")))
-	fmt.Println(engine)
+	iconPath := path.Join(websitePath,"favicon.ico")
+	if IsExist(iconPath) {
+		engine.Use(favicon.New(iconPath))
+	}	
+	
 	engine.HTMLRender = createMyRender(websitePath)
 	engine.GET("/", func(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "/index.html")
@@ -66,5 +73,6 @@ func main() {
 	})
 
 	outputStr := strconv.Itoa(outport)
+	fmt.Println("打开浏览器：http://localhost:"+outputStr)
 	engine.Run(":"+ outputStr)
 }
