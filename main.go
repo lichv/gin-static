@@ -39,11 +39,11 @@ func createMyRender(dirname string) multitemplate.Renderer {
 }
 
 func main() {
-	var websitePath string
+	var publicPath string
 	var staticPath string
 	var outport int
 
-	flag.StringVar(&websitePath,"w","./public","静态文件地址")
+	flag.StringVar(&publicPath,"w","./public","静态文件地址")
 	flag.StringVar(&staticPath,"s","./public/static","静态资源地址")
 	flag.IntVar(&outport,"o",8044,"输出端口")
 	if !flag.Parsed(){
@@ -52,17 +52,22 @@ func main() {
 
 	engine := gin.Default()
 	engine.Static("/static", staticPath)
-	iconPath := path.Join(websitePath,"favicon.ico")
+	iconPath := path.Join(publicPath,"favicon.ico")
 	if IsExist(iconPath) {
 		engine.Use(favicon.New(iconPath))
-	}	
+	}else{
+		iconPath = path.Join(".","favicon.icon")
+		if IsExist(iconPath) {
+			engine.Use(favicon.New(iconPath))
+		}
+	}
 	
-	engine.HTMLRender = createMyRender(websitePath)
+	engine.HTMLRender = createMyRender(publicPath)
 	engine.GET("/", func(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "/index.html")
 	})
-	filepath.Walk(websitePath, func(path string, info fs.FileInfo, err error) error {
-		filename := toLinux(path[len(websitePath)-1:])
+	filepath.Walk(publicPath, func(path string, info fs.FileInfo, err error) error {
+		filename := toLinux(path[len(publicPath)-1:])
 		if !info.IsDir() && strings.HasSuffix(path,".html") {
 			engine.GET(filename, func(c *gin.Context) {
 				c.HTML(200, filename, gin.H{})
