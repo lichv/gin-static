@@ -8,7 +8,7 @@ gin 开发的静态网页，配置好静态资源目录即可
 或者添加参数：
 
 ```shell
-./main -w ./website -s ./public -o 8040
+./main -w ./website -s ./website/static -o 8040
 ```
 
  默认静态html文件地址 website，默认 静态资源目录public，默认端口 8040
