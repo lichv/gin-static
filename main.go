@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/thinkerou/favicon"
 	"io/fs"
-	"net/http"
 	"os"
 	"path"
 	"path/filepath"
@@ -28,6 +27,9 @@ func createMyRender(dirname string) multitemplate.Renderer {
 	filepath.Walk(dirname, func(path string, info fs.FileInfo, err error) error {
 		filename := toLinux(path[len(dirname)-1:])
 		if !info.IsDir() && strings.HasSuffix(path, ".html") {
+			filename = strings.Trim(filename,"/")
+			filename = strings.Trim(filename,"\\")
+			fmt.Println(filename,path)
 			r.AddFromFiles(filename, path)
 		}
 		return nil
@@ -62,8 +64,12 @@ func main() {
 
 	engine.HTMLRender = createMyRender(publicPath)
 	engine.GET("/", func(c *gin.Context) {
-		c.Redirect(http.StatusMovedPermanently, filepath.Join(staticPath, "/index.html"))
+		c.HTML(200,"index.html",gin.H{})
 	})
+	engine.GET("/index", func(c *gin.Context) {
+		c.HTML(200,"index.html",gin.H{})
+	})
+
 	filepath.Walk(publicPath, func(path string, info fs.FileInfo, err error) error {
 		filename := toLinux(path[len(publicPath)-1:])
 		if !info.IsDir() && strings.HasSuffix(path, ".html") {
@@ -73,6 +79,10 @@ func main() {
 		}
 
 		return nil
+	})
+
+	engine.NoRoute(func(c *gin.Context) {
+		c.HTML(200,"index.html",gin.H{})
 	})
 
 	outputStr := strconv.Itoa(outport)
