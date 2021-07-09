@@ -56,7 +56,7 @@ func main() {
 	if IsExist(iconPath) {
 		engine.Use(favicon.New(iconPath))
 	} else {
-		iconPath = path.Join(".", "favicon.icon")
+		iconPath = path.Join(".", "favicon.ico")
 		if IsExist(iconPath) {
 			engine.Use(favicon.New(iconPath))
 		}
@@ -73,6 +73,9 @@ func main() {
 	filepath.Walk(publicPath, func(path string, info fs.FileInfo, err error) error {
 		filename := toLinux(path[len(publicPath)-1:])
 		if !info.IsDir() && strings.HasSuffix(path, ".html") {
+			filename = strings.Trim(filename,"/")
+			filename = strings.Trim(filename,"\\")
+			fmt.Println(filename)
 			engine.GET(filename, func(c *gin.Context) {
 				c.HTML(200, filename, gin.H{})
 			})
